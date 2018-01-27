@@ -95,7 +95,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES=[]
 #HTTPCACHE_STORAGE='scrapy.extensions.httpcache.FilesystemCacheStorage'
 
-# Google API configuration
+# API keys
 GOOGLE_API_KEY = ''
 GOOGLE_CSE_ID  = ''
-
+BING_API_KEY   = ''
