@@ -12,7 +12,7 @@ class GoogleWebSpider(scrapy.Spider):
     NOTHING_MATCHES_TAG = ('<div class="mnr-c">', 'did not match any documents.', 'Suggestions:')
     CAPTCHA_URL = 'https://ipv4.google.com/sorry/index'
 
-    def __init__(self, query='', limit=10, *args, **kwargs):
+    def __init__(self, query='', limit=100, *args, **kwargs):
         self.query = query
         self.limit = int(limit)
         super(GoogleWebSpider, self).__init__(*args, **kwargs)
@@ -64,10 +64,7 @@ class GoogleWebSpider(scrapy.Spider):
                 item = SearchResultItem()
                 item['url'] = re.search('http[s]*://.+', result.css('a::attr(href)').extract_first()).group()
                 title = result.css('a::text').extract_first() or result.css('a span::text')
-                #if not title:
-                #    title = ''
-                #item['title'] = title.encode('utf-8')
-                item['title'] = title
+                item['title'] = title.encode('utf-8')
                 yield item
             except Exception as e:
                 self.logger.error('An error occured when extract the item: ' + str(e))
