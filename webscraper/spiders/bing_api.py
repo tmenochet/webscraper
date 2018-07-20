@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from urllib import urlencode
+from urllib.parse import urlencode
 import json
 from webscraper.items import SearchResultItem
 from scrapy.exceptions import CloseSpider
 
 class BingApiSpider(scrapy.Spider):
     name = "bing_api"
+    allowed_domains = ['api.cognitive.microsoft.com']
+
+    handle_httpstatus_list = [400, 401, 403, 404, 405, 413, 500]
 
     def __init__(self, query='', limit=50, *args, **kwargs):
         self.query = query
         self.limit = int(limit)
-        super(BingApiSpider, self).__init__(*args, **kwargs)
-        #super().__init__(**kwargs)  # python3
+        super().__init__(**kwargs)
 
     def start_requests(self):
         key = self.settings.get('BING_API_KEY')
@@ -52,8 +54,9 @@ class BingApiSpider(scrapy.Spider):
         # Extact all of result
         for result in response_json['webPages']['value']:
             item = SearchResultItem()
+            item['query'] = self.query
             item['url']   = result['url']
-            item['title'] = result['name'].encode('utf-8')
+            item['title'] = result['name']
             self.start_index += 1
             yield item
         self.logger.info('Response parsing completed')

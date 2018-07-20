@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from urllib import urlencode
+from urllib.parse import urlencode
 import json
 from webscraper.items import SearchResultItem
 from scrapy.exceptions import CloseSpider
 
 class GoogleApiSpider(scrapy.Spider):
-    name = "google_api"
+    name = 'google_api'
+    allowed_domains = ['www.googleapis.com']
+
+    handle_httpstatus_list = [400, 401, 403, 404, 405, 413, 500]
 
     def __init__(self, query='', limit=10, *args, **kwargs):
         self.query = query
         self.limit = int(limit)
-        super(GoogleApiSpider, self).__init__(*args, **kwargs)
-        #super().__init__(**kwargs)  # python3
+        super().__init__(**kwargs)
 
     def start_requests(self):
         key = self.settings.get('GOOGLE_API_KEY')
@@ -52,8 +54,9 @@ class GoogleApiSpider(scrapy.Spider):
         # Extact all of result
         for result in response_json['items']:
             item = SearchResultItem()
+            item['query'] = self.query
             item['url']   = result['link']
-            item['title'] = result['title'].encode('utf-8')
+            item['title'] = result['title']
             yield item
         self.logger.info('Response parsing completed')
 

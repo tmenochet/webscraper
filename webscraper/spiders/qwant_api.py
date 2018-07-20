@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from urllib import urlencode
+from urllib.parse import urlencode
 import json
 from webscraper.items import SearchResultItem
 from scrapy.exceptions import CloseSpider
 
 class QwantApiSpider(scrapy.Spider):
     name = "qwant_api"
+    allowed_domains = ['api.qwant.com']
+    
+    handle_httpstatus_list = [429]
 
     def __init__(self, query='', limit=10, *args, **kwargs):
         self.query = query
         self.limit = int(limit)
-        super(QwantApiSpider, self).__init__(*args, **kwargs)
-        #super().__init__(**kwargs)  # python3
+        super().__init__(**kwargs)
 
     def start_requests(self):
         base_url = 'https://api.qwant.com/api/search/web?'
@@ -24,6 +26,8 @@ class QwantApiSpider(scrapy.Spider):
 
     def parse(self, response):
         # Errors
+        if response.status == 429:
+            raise CloseSpider('Captcha redirect detected')
         if (response.status != 200):
             self.logger.warning('Bad request')
             raise CloseSpider('Error response returned')
@@ -41,8 +45,9 @@ class QwantApiSpider(scrapy.Spider):
         # Extact all of result
         for result in response_json['data']['result']['items']:
             item = SearchResultItem()
+            item['query'] = self.query
             item['url']   = result['url']
-            item['title'] = result['title'].encode('utf-8')
+            item['title'] = result['title']
             yield item
         self.logger.info('Response parsing completed')
 

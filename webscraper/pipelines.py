@@ -3,7 +3,7 @@
 # Define your item pipelines here
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
-# See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
+# See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 import json
 import requests
@@ -43,7 +43,7 @@ class BaiduWebPipeline(object):
 class JsonWriterPipeline(object):
 
     def open_spider(self, spider):
-        self.file = open(spider.name + '-items.jl', 'w')
+        self.file = open(spider.name + '-items.jl', 'a')
 
     def close_spider(self, spider):
         self.file.close()
@@ -56,7 +56,7 @@ class JsonWriterPipeline(object):
 class ListWriterPipeline(object):
 
     def open_spider(self, spider):
-        self.file = open(spider.name + '-items.lst', 'w')
+        self.file = open(spider.name + '-items.lst', 'a')
 
     def close_spider(self, spider):
         self.file.close()

@@ -1,22 +1,27 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from urllib import urlencode
+from urllib.parse import urlencode
 import re
 from webscraper.items import SearchResultItem
 from scrapy.exceptions import CloseSpider
 
 class GoogleWebSpider(scrapy.Spider):
     name = "google_web"
+    allowed_domains = ['www.google.com']
 
-    NOTHING_MATCHES_TAG = ('<div class="mnr-c">', 'did not match any documents.', 'Suggestions:')
-    CAPTCHA_URL = 'https://ipv4.google.com/sorry/index'
+    custom_settings = {
+        'DOWNLOAD_DELAY': 3,
+    }
+    handle_httpstatus_list = [302]
+
+    NOTHING_MATCHES_TAG = (b'<div class="mnr-c">', b'did not match any documents.', b'Suggestions:')
+    CAPTCHA_URL = b'https://www.google.com/sorry/index'
 
     def __init__(self, query='', limit=100, *args, **kwargs):
         self.query = query
         self.limit = int(limit)
-        super(GoogleWebSpider, self).__init__(*args, **kwargs)
-        #super().__init__(**kwargs)  # python3
+        super().__init__(**kwargs)
 
     def start_requests(self):
         base_url = 'https://www.google.com/search?'
@@ -27,21 +32,10 @@ class GoogleWebSpider(scrapy.Spider):
 
     def parse(self, response):
         # Errors
+        if response.status == 302:
+            if GoogleWebSpider.CAPTCHA_URL in response.headers['Location']:
+               raise CloseSpider('Captcha redirect detected')
         if (response.status >= 400):
-            if response.status == 400:
-                self.logger.warning('Bad request')
-            elif response.status == 401:
-                self.logger.warning('Authorization failure')
-            elif response.status == 403:
-                self.logger.warning('Forbidden')
-            elif response.status == 404:
-                self.logger.warning('Resource not found')
-            elif response.status == 405:
-                self.logger.warning('Method not allowed')
-            elif response.status == 413:
-                self.logger.warning('File too large')
-            elif response.status == 500:
-                self.logger.warning('Server error')
             raise CloseSpider('Error response returned')
 
         # Nothing found
@@ -53,18 +47,13 @@ class GoogleWebSpider(scrapy.Spider):
         if empty:
             raise CloseSpider('Empty search result')
 
-        # Determine whether the captcha present
-        if response.status in [301, 302]:
-            if GoogleWebSpider.CAPTCHA_URL in response.headers['Location']:
-               raise CloseSpider('Captcha redirect detected')
-
         # Extact all of result
         for result in response.css('h3.r'):
             try:
                 item = SearchResultItem()
+                item['query'] = self.query
                 item['url'] = re.search('http[s]*://.+', result.css('a::attr(href)').extract_first()).group()
-                title = result.css('a::text').extract_first() or result.css('a span::text')
-                item['title'] = title.encode('utf-8')
+                item['title'] = result.css('a::text').extract_first() or result.css('a span::text')
                 yield item
             except Exception as e:
                 self.logger.error('An error occured when extract the item: ' + str(e))

@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from urllib import urlencode
+from urllib.parse import urlencode
 import re
 from webscraper.items import SearchResultItem
 from scrapy.exceptions import CloseSpider
 
 class BingWebSpider(scrapy.Spider):
     name = "bing_web"
+    allowed_domains = ['www.bing.com']
 
-    NOTHING_MATCHES_TAG = ('<li class="b_no">', 'There are no results for')
+    NOTHING_MATCHES_TAG = (b'<li class="b_no">', b'There are no results for')
 
     def __init__(self, query='', limit=50, *args, **kwargs):
         self.query = query
         self.limit = int(limit)
-        super(BingWebSpider, self).__init__(*args, **kwargs)
-        #super().__init__(**kwargs)  # python3
+        super().__init__(**kwargs)
 
     def start_requests(self):
         base_url = 'https://www.bing.com/search?'
@@ -28,20 +28,6 @@ class BingWebSpider(scrapy.Spider):
     def parse(self, response):
         # Errors
         if (response.status >= 400):
-            if response.status == 400:
-                self.logger.warning('Bad request')
-            elif response.status == 401:
-                self.logger.warning('Authorization failure')
-            elif response.status == 403:
-                self.logger.warning('Forbidden')
-            elif response.status == 404:
-                self.logger.warning('Resource not found')
-            elif response.status == 405:
-                self.logger.warning('Method not allowed')
-            elif response.status == 413:
-                self.logger.warning('File too large')
-            elif response.status == 500:
-                self.logger.warning('Server error')
             raise CloseSpider('Error response returned')
 
         # Nothing found
@@ -57,9 +43,9 @@ class BingWebSpider(scrapy.Spider):
         for result in response.css('li.b_algo'):
             try:
                 item = SearchResultItem()
+                item['query'] = self.query
                 item['url'] = re.search('http[s]*://.+', result.css('a::attr(href)').extract_first()).group()
-                title = result.css('a::text').extract_first() or result.css('a span::text')
-                item['title'] = title.encode('utf-8')
+                item['title'] = result.css('a::text').extract_first() or result.css('a span::text')
                 yield item
             except Exception as e:
                 self.logger.error('An error occured when extract the item: ' + str(e))
