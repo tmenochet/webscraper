@@ -55,6 +55,10 @@ TELNETCONSOLE_ENABLED = False
 #DOWNLOADER_MIDDLEWARES = {
 #    'webscraper.middlewares.WebscraperDownloaderMiddleware': 543,
 #}
+DOWNLOADER_MIDDLEWARES = {
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'random_useragent.RandomUserAgentMiddleware': 400,
+}
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
@@ -97,6 +101,9 @@ ITEM_PIPELINES = {
 
 # Logs
 LOG_LEVEL = 'INFO'
+
+# Random User-Agents
+USER_AGENT_LIST = 'data/useragents.txt'
 
 # API keys
 GOOGLE_API_KEY = ''
