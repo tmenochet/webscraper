@@ -49,7 +49,7 @@ With the scrapy command, only the ListWriter pipe is enabled by default. Use the
   ```
 * Pull the Git repository and install the Python dependencies:
   ```
-  git pull https://github.com/tmenochet/webscraper.git
+  git clone https://github.com/tmenochet/webscraper.git
   cd webscraper; pip3 install -r requirements.txt
   ```
 * Set up your API keys in webscraper/settings.py:
