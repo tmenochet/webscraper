@@ -1,0 +1,24 @@
+# Directory indexing
+intitle:index.of "parent directory"
+
+# Sensitive files
+inurl:htaccess OR inurl:passwd OR inurl:shadow OR inurl:htusers OR inurl:netrc
+BEGIN "PRIVATE KEY" filetype:pgp OR filetype:key OR filetype:pem
+
+# Default files
+inurl:README OR inurl:LICENSE OR inurl:INSTALL OR inurl:SETUP OR inurl:CONFIG OR inurl:CHANGELOG
+
+# Config files
+filetype:conf OR filetype:cnf OR filetype:inf OR filetype:rdp OR filetype:cfg OR filetype:ora OR filetype:ini OR filetype:properties
+
+# Backup files
+filetype:bkf OR filetype:bkp OR filetype:bak OR filetype:old OR filetype:backup OR filetype:ori OR filetype:orig OR filetype:sav OR filetype:save
+
+# Database files
+filetype:txt OR filetype:xml OR filetype:log OR filetype:csv OR filetype:dat OR filetype:reg OR filetype:sql OR filetype:dbf OR filetype:mdb
+
+# Documents
+filetype:doc OR filetype:docx OR filetype:odt OR filetype:rtf OR filetype:sxw OR filetype:psw OR filetype:ppt OR filetype:pptx OR filetype:pps OR filetype:xls OR filetype:xlsx
+
+# SQL errors
+"sql syntax near" OR "syntax error has occurred" OR "incorrect syntax near" OR "unexpected end of SQL command" OR "Warning: mysql_connect()" OR "Warning: mysql_query()" OR "Warning: pg_connect()"

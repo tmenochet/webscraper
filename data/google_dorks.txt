@@ -1,0 +1,24 @@
+# Directory indexing
+intitle:index.of intext:"parent directory"
+
+# Sensitive files
+inurl:htaccess | inurl:passwd | inurl:shadow | inurl:htusers | inurl:netrc
+intext:BEGIN intext:"PRIVATE KEY" ext:pgp | ext:key | ext:pem
+
+# Default files
+inurl:README | inurl:LICENSE | inurl:INSTALL | inurl:SETUP | inurl:CONFIG | inurl:CHANGELOG
+
+# Config files
+ext:conf | ext:cnf | ext:inf | ext:rdp | ext:cfg | ext:ora | ext:ini | ext:properties
+
+# Backup files
+ext:bkf | ext:bkp | ext:bak | ext:old | ext:backup | ext:ori | ext:orig | ext:sav | ext:save
+
+# Database files
+ext:txt | ext:xml | ext:log | ext:csv | ext:dat | ext:reg | ext:sql | ext:dbf | ext:mdb
+
+# Documents
+ext:doc | ext:docx | ext:odt | ext:rtf | ext:sxw | ext:psw | ext:ppt | ext:pptx | ext:pps | ext:xls | ext:xlsx
+
+# SQL errors
+intext:"sql syntax near" | intext:"syntax error has occurred" | intext:"incorrect syntax near" | intext:"unexpected end of SQL command" | intext:"Warning: mysql_connect()" | intext:"Warning: mysql_query()" | intext:"Warning: pg_connect()"
