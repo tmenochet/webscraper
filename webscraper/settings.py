@@ -105,6 +105,9 @@ LOG_LEVEL = 'INFO'
 # Random User-Agents
 USER_AGENT_LIST = 'data/useragents.txt'
 
+# Mirror time range
+WAYBACK_MACHINE_TIME_RANGE = (10000101, 30000101)
+
 # API keys
 GOOGLE_API_KEY = ''
 GOOGLE_CSE_ID  = ''
