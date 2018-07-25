@@ -57,6 +57,8 @@ class WaybackMachineSpider(scrapy.Spider):
 
             if snapshot['original'].endswith('/robots.txt') and snapshot['statuscode'] == '200':
                 yield scrapy.Request(url=snapshot_url, callback=self.parse_robots)
+            if snapshot['original'].endswith('/sitemap.xml') and snapshot['statuscode'] == '200':
+                yield scrapy.Request(url=snapshot_url, callback=self.parse_sitemap)
 
     def parse_robots(self, response):
         # Errors
@@ -72,4 +74,27 @@ class WaybackMachineSpider(scrapy.Spider):
                 item['cache'] = response.url
                 item['url'] = urljoin(base_url, url)
                 yield item
+
+    def parse_sitemap(self, response):
+        # Errors
+        if (response.status != 200):
+            raise CloseSpider('Bad response returned')
+
+        # Parse sitemap.xml
+        s = Sitemap(response.body)
+        if s.type == 'urlset':
+            base_url = response.url.split('id_/')[1]
+            for d in s:
+               loc = d['loc']
+               item = SearchResultItem()
+               item['cache'] = response.url
+               item['url'] = urljoin(base_url, loc)
+               yield item
+               # Also consider alternate URLs (xhtml:link rel="alternate")
+               if 'alternate' in d:
+                   for alt in d['alternate']:
+                       item = SearchResultItem()
+                       item['cache'] = response.url
+                       item['url'] = urljoin(base_url, alt)
+                       yield item
 
