@@ -2,8 +2,10 @@
 
 import scrapy
 from scrapy.exceptions import CloseSpider
+from scrapy.utils.sitemap import Sitemap
 from urllib.parse import urlencode
 import json
+from six.moves.urllib.parse import urljoin
 
 from webscraper.items import SearchResultItem
 
@@ -52,4 +54,22 @@ class WaybackMachineSpider(scrapy.Spider):
             item['url'] = snapshot['original']
             item['status'] = snapshot['statuscode']
             yield item
+
+            if snapshot['original'].endswith('/robots.txt') and snapshot['statuscode'] == '200':
+                yield scrapy.Request(url=snapshot_url, callback=self.parse_robots)
+
+    def parse_robots(self, response):
+        # Errors
+        if (response.status != 200):
+            raise CloseSpider('Bad response returned')
+
+        # Parse robots.txt
+        for line in response.text.splitlines():
+            base_url = response.url.split('id_/')[1]
+            if line.lstrip().lower().startswith('sitemap:') or line.lstrip().lower().startswith('allow:') or line.lstrip().lower().startswith('disallow:'):
+                url = line.split(':', 1)[1].strip()
+                item = SearchResultItem()
+                item['cache'] = response.url
+                item['url'] = urljoin(base_url, url)
+                yield item
 
