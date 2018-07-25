@@ -66,9 +66,11 @@ class WaybackMachineSpider(scrapy.Spider):
             raise CloseSpider('Bad response returned')
 
         # Parse robots.txt
+        base_url = response.url.split('id_/')[1]
         for line in response.text.splitlines():
-            base_url = response.url.split('id_/')[1]
-            if line.lstrip().lower().startswith('sitemap:') or line.lstrip().lower().startswith('allow:') or line.lstrip().lower().startswith('disallow:'):
+            if line == '# Welcome to the Archive!':
+                break
+            elif line.lstrip().lower().startswith('sitemap:') or line.lstrip().lower().startswith('allow:') or line.lstrip().lower().startswith('disallow:'):
                 url = line.split(':', 1)[1].strip()
                 item = SearchResultItem()
                 item['cache'] = response.url
