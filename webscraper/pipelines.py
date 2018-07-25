@@ -42,6 +42,9 @@ class BaiduWebPipeline(object):
 
 class JsonWriterPipeline(object):
 
+    def __init__(self):
+        self.items_seen = set()
+
     def open_spider(self, spider):
         self.file = open(spider.name + '-items.jl', 'a')
 
@@ -49,11 +52,19 @@ class JsonWriterPipeline(object):
         self.file.close()
 
     def process_item(self, item, spider):
-        line = json.dumps(dict(item)) + "\n"
+        if 'cache' in item:
+            if (item['url'], item['cache']) in self.items_seen:
+                raise DropItem("Duplicate item found: %s" % item)
+            else:
+                self.items_seen.add((item['url'], item['cache']))
+        line = json.dumps(dict(item)) + '\n'
         self.file.write(line)
         return item
 
 class ListWriterPipeline(object):
+
+    def __init__(self):
+        self.items_seen = set()
 
     def open_spider(self, spider):
         self.file = open(spider.name + '-items.lst', 'a')
@@ -62,7 +73,11 @@ class ListWriterPipeline(object):
         self.file.close()
 
     def process_item(self, item, spider):
-        line = dict(item)['url'] + "\n"
-        self.file.write(line)
-        return item
+        if item['url'] in self.items_seen:
+            raise DropItem("Duplicate item found: %s" % item)
+        else:
+            self.items_seen.add(item['url'])
+            line = dict(item)['url'] + '\n'
+            self.file.write(line)
+            return item
 

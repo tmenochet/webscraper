@@ -15,6 +15,7 @@ class WebscraperItem(scrapy.Item):
 
 class SearchResultItem(scrapy.Item):
     query = scrapy.Field()
-    url   = scrapy.Field()
+    url = scrapy.Field()
     title = scrapy.Field()
-    timestamp = scrapy.Field()
+    status = scrapy.Field()
+    cache = scrapy.Field()

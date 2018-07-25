@@ -1,48 +1,55 @@
-import os
-from datetime import datetime
+# -*- coding: utf-8 -*-
 
-from scrapy.spiders import CrawlSpider, Rule
-from scrapy.linkextractors import LinkExtractor
-
-from scrapy_wayback_machine import WaybackMachineMiddleware
+import scrapy
+from scrapy.exceptions import CloseSpider
+from urllib.parse import urlencode
+import json
 
 from webscraper.items import SearchResultItem
 
-class WaybackMachineSpider(CrawlSpider):
+class WaybackMachineSpider(scrapy.Spider):
     name = 'waybackmachine'
-
-    custom_settings = {
-      'DOWNLOADER_MIDDLEWARES': {'scrapy_wayback_machine.WaybackMachineMiddleware':5}
-    }
-    handle_httpstatus_list = [404]
+    allowed_domains = ['web.archive.org']
 
     def __init__(self, domain, *args, **kwargs):
-        allow=()
-        deny=()
-        self.rules = (
-            Rule(LinkExtractor(allow=allow, deny=deny), callback=self.parse),
-        )
+        self.domain = domain
+        self.snapshot_url_template = 'http://web.archive.org/web/{timestamp}id_/{original}'
+        self.timestamp_format = '%Y%m%d%H%M%S'
+        super().__init__(**kwargs)
 
-        # parse the allowed domains and start urls
-        self.allowed_domains = []
-        self.start_urls = []
-        url = 'http://' + domain + '/*'
-        self.allowed_domains.append(domain)
-        self.start_urls.append(url)
-
-        super().__init__()
+    def start_requests(self):
+        base_url = 'https://web.archive.org/cdx/search/cdx?'
+        url = self.domain + '/*'
+        payload = {'url': url, 'output': 'json', 'fl': 'timestamp,original,statuscode'}
+        self.url = base_url + urlencode(payload)
+        yield scrapy.Request(url=self.url, callback=self.parse_start_url)
 
     def parse_start_url(self, response):
-        # scrapy doesn't call the callbacks for the start urls by default,
-        # this overrides that behavior so that any matching callbacks are called
-        for rule in self._rules:
-            if rule.link_extractor._link_allowed(response):
-                if rule.callback:
-                    rule.callback(response)
+        # Errors
+        if (response.status != 200):
+            raise CloseSpider('Bad response returned')
 
-    def parse(self, response):
-        item = SearchResultItem()
-        item['url'] = response.meta['wayback_machine_url'].split("id_/")[1]
-        time = response.meta['wayback_machine_time']
-        item['timestamp'] = time.strftime(WaybackMachineMiddleware.timestamp_format)
-        yield item
+        response_json = json.loads(response.body_as_unicode())
+
+        # Nothing found
+        if len(response_json) < 2:
+            raise CloseSpider('Empty search result')
+
+        # Extact all of result
+        keys, rows = response_json[0], response_json[1:]
+        def build_dict(row):
+            new_dict = {}
+            for i, key in enumerate(keys):
+                new_dict[key] = row[i]
+            return new_dict
+        snapshots = list(map(build_dict, rows))
+        del rows
+
+        for snapshot in snapshots:
+            snapshot_url = self.snapshot_url_template.format(**snapshot)
+            item = SearchResultItem()
+            item['cache'] = snapshot_url
+            item['url'] = snapshot['original']
+            item['status'] = snapshot['statuscode']
+            yield item
+
