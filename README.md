@@ -15,7 +15,7 @@ The provided Python script leverage dorks to fetch juicy resources.
 ## Usage
 * Scraping mirrors:
 ```
-python3 ./webscraper.py --spider waybackmachine --domain example.com --from 20160101 --to 20180101
+python3 ./webscraper.py --spider waybackmachine --domain example.com
 ```
 * Dorking with search engines:
 ```

@@ -94,7 +94,6 @@ def main():
     settings.update({
         'LOG_LEVEL': 'DEBUG' if args.verbose else 'INFO',
         'DOWNLOAD_DELAY': args.delay,
-        'WAYBACK_MACHINE_TIME_RANGE': (getattr(args, 'from'), args.to),
         'ITEM_PIPELINES': {
             'webscraper.pipelines.BaiduWebPipeline': 300,
             'webscraper.pipelines.JsonWriterPipeline': 400,
@@ -127,14 +126,6 @@ def parse_args():
     ))
     parser.add_argument('-l', '--limit', metavar='LIMIT', default=10, type=int, help=(
         'Specify the limit number of result to scrape by query.'
-    ))
-    parser.add_argument('-f', '--from', metavar='TIMESTAMP', default='10000101', help=(
-        'The timestamp for the beginning of the range to scrape. '
-        'Can either be YYYYmmdd, YYYYmmddHHMMSS, or a Unix timestamp.'
-    ))
-    parser.add_argument('-t', '--to', metavar='TIMESTAMP', default='30000101', help=(
-        'The timestamp for the end of the range to scrape. '
-        'Use the same timestamp as `--from` to specify a single point in time.'
     ))
     return parser.parse_args()
 
