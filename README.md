@@ -25,15 +25,19 @@ python3 ./webscraper.py --spider bing_api --domain example.com --limit 50 --dela
 ```
 scrapy crawl google_api -a query='site:s3.amazonaws.com inurl:example' -a limit=10 -o google_api-items.jl
 ```
+* Download search results:
+```
+scrapy crawl baidu_web -a query='site:example.com filetype:pdf' -a limit=50 -o baidu_web-items.jl -s FILES_STORE=download
+```
 
 ## Search results
 The JsonWriter and ListWriter pipes are enabled by default in the script, search results will be stored as below:
-- <spider>-items.jl:
+- google_api-items.jl:
   ```
   {"url": "https://example.com/", "title": "Example Domain", "query": "site:example.com"}
   {"url": "https://www.example.com/", "title": "Example Subdomain", "query": "site:example.com"}
   ```
-- <spider>-items.lst:
+- google_api-items.lst:
   ```
   https://example.com/
   https://www.example.com/

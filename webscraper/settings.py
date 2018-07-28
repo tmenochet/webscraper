@@ -73,7 +73,8 @@ EXTENSIONS = {
 #    'webscraper.pipelines.WebscraperPipeline': 300,
 #}
 ITEM_PIPELINES = {
-    'webscraper.pipelines.BaiduWebPipeline': 300,
+    'webscraper.pipelines.BaiduWebPipeline': 1,
+    'webscraper.pipelines.FileDownloadPipeline': 2,
 #    'webscraper.pipelines.JsonWriterPipeline': 400,
     'webscraper.pipelines.ListWriterPipeline': 500,
 }
@@ -105,8 +106,10 @@ LOG_LEVEL = 'INFO'
 # Random User-Agents
 USER_AGENT_LIST = 'data/useragents.txt'
 
-# Mirror time range
-WAYBACK_MACHINE_TIME_RANGE = (10000101, 30000101)
+# File download
+#FILES_STORE = 'download'
+FILES_RESULT_FIELD = 'download'
+MEDIA_ALLOW_REDIRECTS = True
 
 # API keys
 GOOGLE_API_KEY = ''

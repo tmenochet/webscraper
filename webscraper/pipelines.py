@@ -10,6 +10,9 @@ import requests
 import re
 from scrapy.exceptions import DropItem
 
+from scrapy import Request
+from scrapy.pipelines.files import FilesPipeline
+
 class WebscraperPipeline(object):
     def process_item(self, item, spider):
         return item
@@ -80,4 +83,19 @@ class ListWriterPipeline(object):
             line = dict(item)['url'] + '\n'
             self.file.write(line)
             return item
+
+class FileDownloadPipeline(FilesPipeline):
+    # Instantiate pipeline if FILES_STORE setting is specified
+    @classmethod
+    def from_crawler(cls, crawler):
+        if 'FILES_STORE' in crawler.settings:
+            pipe = cls.from_settings(crawler.settings)
+            pipe.crawler = crawler
+        else:
+            pipe = None
+        return pipe
+
+    # Download file from item attribute 'url'
+    def get_media_requests(self, item, info):
+        yield Request(item.get('url'))
 

@@ -95,11 +95,16 @@ def main():
         'LOG_LEVEL': 'DEBUG' if args.verbose else 'INFO',
         'DOWNLOAD_DELAY': args.delay,
         'ITEM_PIPELINES': {
-            'webscraper.pipelines.BaiduWebPipeline': 300,
+            'webscraper.pipelines.BaiduWebPipeline': 1,
+            'webscraper.pipelines.FileDownloadPipeline': 2,
             'webscraper.pipelines.JsonWriterPipeline': 400,
             'webscraper.pipelines.ListWriterPipeline': 500,
         }
     })
+    if (args.download):
+        settings.update({
+            'FILES_STORE': 'download'
+        })
 
     # start the crawler
     configure_logging()
@@ -126,6 +131,9 @@ def parse_args():
     ))
     parser.add_argument('-l', '--limit', metavar='LIMIT', default=10, type=int, help=(
         'Specify the limit number of result to scrape by query.'
+    ))
+    parser.add_argument('--download', action='store_true', help=(
+        'Enable resource download and specify the destination directory.'
     ))
     return parser.parse_args()
 

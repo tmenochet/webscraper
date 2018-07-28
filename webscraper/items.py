@@ -19,3 +19,4 @@ class SearchResultItem(scrapy.Item):
     title = scrapy.Field()
     status = scrapy.Field()
     cache = scrapy.Field()
+    download = scrapy.Field()
