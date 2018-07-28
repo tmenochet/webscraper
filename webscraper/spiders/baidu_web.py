@@ -44,8 +44,7 @@ class BaiduWebSpider(scrapy.Spider):
                 item = SearchResultItem()
                 item['query'] = self.query
                 item['url'] = re.search('http[s]*://.+', result.css('a::attr(href)').extract_first()).group()
-                title = u''.join([plain.extract() for plain in result.css('a::text')])
-                item['title'] = title.encode('utf-8')
+                item['title'] = u''.join([plain.extract() for plain in result.css('a::text')])
                 yield item
             except Exception as e:
                 self.logger.error('An error occured when extract the item: ' + str(e))
