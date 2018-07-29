@@ -6,6 +6,7 @@ from scrapy.utils.sitemap import Sitemap
 from urllib.parse import urlencode
 import json
 from six.moves.urllib.parse import urljoin
+import re
 
 from webscraper.items import SearchResultItem
 
@@ -47,6 +48,8 @@ class WaybackMachineSpider(scrapy.Spider):
         snapshots = list(map(build_dict, rows))
         del rows
 
+        regex_sitemap = re.compile(r".*sitemap[^/]*\.xml$")
+
         for snapshot in snapshots:
             snapshot_url = self.snapshot_url_template.format(**snapshot)
             item = SearchResultItem()
@@ -57,7 +60,7 @@ class WaybackMachineSpider(scrapy.Spider):
 
             if snapshot['original'].endswith('/robots.txt') and snapshot['statuscode'] == '200':
                 yield scrapy.Request(url=snapshot_url, callback=self.parse_robots)
-            if snapshot['original'].endswith('/sitemap.xml') and snapshot['statuscode'] == '200':
+            elif regex_sitemap.match(snapshot['original']) and snapshot['statuscode'] == '200':
                 yield scrapy.Request(url=snapshot_url, callback=self.parse_sitemap)
 
     def parse_robots(self, response):
@@ -83,20 +86,18 @@ class WaybackMachineSpider(scrapy.Spider):
             raise CloseSpider('Bad response returned')
 
         # Parse sitemap.xml
-        s = Sitemap(response.body)
-        if s.type == 'urlset':
-            base_url = response.url.split('id_/')[1]
-            for d in s:
-               loc = d['loc']
+        sitemap = Sitemap(response.body)
+        if sitemap.type == 'urlset' or sitemap.type == 'sitemapindex':
+            for url in sitemap:
                item = SearchResultItem()
+               item['url'] = url['loc']
                item['cache'] = response.url
-               item['url'] = urljoin(base_url, loc)
                yield item
                # Also consider alternate URLs (xhtml:link rel="alternate")
-               if 'alternate' in d:
-                   for alt in d['alternate']:
+               if 'alternate' in url:
+                   for alt in url['alternate']:
                        item = SearchResultItem()
+                       item['url'] = alt
                        item['cache'] = response.url
-                       item['url'] = urljoin(base_url, alt)
                        yield item
 
