@@ -76,7 +76,9 @@ class ListWriterPipeline(object):
         self.file.close()
 
     def process_item(self, item, spider):
-        if item['url'] in self.items_seen:
+        if 'status' in item and item['status'] == '404':
+            raise DropItem("Item not found: %s" % item)
+        elif item['url'] in self.items_seen:
             raise DropItem("Duplicate item found: %s" % item)
         else:
             self.items_seen.add(item['url'])
